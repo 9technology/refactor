@@ -33,6 +33,5 @@ This one allows me to 'apply all' or 'skip all' on a per-file basis, not across 
 
 ## TODO
 
-- Ignore binary files (images etc.)
 - Prettier display of patch hunks
 
