@@ -1,7 +1,7 @@
 package main
 
 import (
-	"./src/refactor"
+	"github.com/pranavraja/refactor/src/refactor"
 	"fmt"
 	"io/ioutil"
 	"os"
