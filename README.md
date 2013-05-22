@@ -27,6 +27,10 @@ This is great, but I still want to see the first change to determine whether to 
 
 This one allows me to 'apply all' or 'skip all' on a per-file basis, not across the project. Also with a large number of files it tends to make vim freak out and write swap files all over the place.
 
+## Running the tests
+
+`go test ./src/refactor`
+
 ## TODO
 
 - Ignore binary files (images etc.)
