@@ -1,8 +1,10 @@
 package main
 
 import (
-	"github.com/pranavraja/refactor/src/refactor"
 	"fmt"
+	"github.com/pranavraja/refactor/src/refactor"
+	"github.com/vrischmann/termcolor"
+	"io"
 	"io/ioutil"
 	"os"
 	"path"
@@ -28,9 +30,9 @@ func walk(root string, suffix string, filePaths chan<- string) {
 				filePaths <- f
 			}
 		} else {
-            if strings.HasSuffix(fullPath, suffix) {
-                filePaths <- fullPath
-            }
+			if strings.HasSuffix(fullPath, suffix) {
+				filePaths <- fullPath
+			}
 		}
 	}
 }
@@ -63,12 +65,16 @@ func patchAll(filenames <-chan string, find *regexp.Regexp, replace string, patc
 	}
 }
 
+func prettyPrint(patch refactor.Patch, out io.Writer) {
+	fmt.Fprintf(out, "%s\n %s\n %s\n", termcolor.Colored(patch.Filename, termcolor.Cyan), termcolor.Colored("-"+patch.Before, termcolor.Red), termcolor.Colored("+"+patch.After, termcolor.Green))
+}
+
 func main() {
 	if len(os.Args) <= 3 {
-        println("Example: refactor .rb require import\n  Replaces 'require' with 'import' in all .rb files")
+		println("Example: refactor .rb require import\n  Replaces 'require' with 'import' in all .rb files")
 		return
 	}
-    suffix := os.Args[1]
+	suffix := os.Args[1]
 	find := regexp.MustCompile(os.Args[2])
 	replace := os.Args[3]
 	patches := make(chan refactor.Patch)
@@ -79,7 +85,7 @@ func main() {
 	go patchAll(paths, find, replace, patches, proceed)
 	var canProceed bool
 	for p := range patches {
-		fmt.Printf("%v\n", p)
+		prettyPrint(p, os.Stdout)
 		if !canProceed {
 			fmt.Printf("Continue? (y/n[default]): ")
 			var input rune
