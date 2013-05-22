@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func walk(root string, filePaths chan<- string) {
+func walk(root string, suffix string, filePaths chan<- string) {
 	defer close(filePaths)
 	entries, err := ioutil.ReadDir(root)
 	if err != nil {
@@ -23,15 +23,14 @@ func walk(root string, filePaths chan<- string) {
 		fullPath := path.Join(root, file.Name())
 		if file.IsDir() {
 			nestedFilePaths := make(chan string)
-			go walk(fullPath, nestedFilePaths)
+			go walk(fullPath, suffix, nestedFilePaths)
 			for f := range nestedFilePaths {
 				filePaths <- f
 			}
 		} else {
-			if !strings.Contains(file.Name(), ".") {
-				continue // Ignore binary files
-			}
-			filePaths <- fullPath
+            if strings.HasSuffix(fullPath, suffix) {
+                filePaths <- fullPath
+            }
 		}
 	}
 }
@@ -65,17 +64,18 @@ func patchAll(filenames <-chan string, find *regexp.Regexp, replace string, patc
 }
 
 func main() {
-	if len(os.Args) <= 2 {
-		println("Usage: refactor find replace")
+	if len(os.Args) <= 3 {
+        println("Example: refactor .rb require import\n  Replaces 'require' with 'import' in all .rb files")
 		return
 	}
-	find := regexp.MustCompile(os.Args[1])
-	replace := os.Args[2]
+    suffix := os.Args[1]
+	find := regexp.MustCompile(os.Args[2])
+	replace := os.Args[3]
 	patches := make(chan refactor.Patch)
 	proceed := make(chan bool)
 
 	paths := make(chan string)
-	go walk(".", paths)
+	go walk(".", suffix, paths)
 	go patchAll(paths, find, replace, patches, proceed)
 	var canProceed bool
 	for p := range patches {

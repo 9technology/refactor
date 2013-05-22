@@ -5,9 +5,9 @@ A tool inspired by [codemod](https://github.com/facebook/codemod) to automate re
 
 ## Usage
 
-`refactor regexp replacement`
+`refactor .ext regexp replacement`
 
-Apply `s/regexp/replacement/g` across all files in the current directory tree.
+Apply `s/regexp/replacement/g` across all files in the current directory tree with extension `.ext`
 
 `regexp` is parsed by the [Go regexp package](http://golang.org/pkg/regexp/), so you can probably use any of the [re2](https://code.google.com/p/re2/wiki/Syntax) syntax. For example, you can use `$1`-style placeholders to refer to capture groups.
 
