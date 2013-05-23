@@ -1,19 +1,21 @@
 
-A tool inspired by [codemod](https://github.com/facebook/codemod) to automate refactorings across your codebase. Useful when working without an IDE or with XCode. Skips hidden files and files without an extension.
+A tool to automate regex-based refactorings across your codebase. Similar to [codemod](htts://github.com/facebook/codemod), but slightly more optimistic.
 
 `go get github.com/pranavraja/refactor`
 
 ## Usage
 
+Assuming that `$GOPATH/bin` is in your `$PATH`:
+
 `refactor .ext 'regexp' 'replacement'`
 
-Apply `s/regexp/replacement/g` across all files in the current directory tree with extension `.ext`
+Apply `s/regexp/replacement/g` across all files in the current directory tree with extension `.ext`. Skip hidden files. Ask for confirmation on the first change, and if the user accepts, apply the rest of the changes without confirmation. Otherwise abort. Output each change applied as a color-coded patch.
 
-`regexp` is parsed by the [Go regexp package](http://golang.org/pkg/regexp/), so you can probably use any of the [re2](https://code.google.com/p/re2/wiki/Syntax) syntax. For example, you can use `$1`-style placeholders to refer to capture groups, as long as you single-quote the replacement string so that your shell doesn't interpolate `$1` as something else.
+`regexp` is parsed by the [Go regexp package](http://golang.org/pkg/regexp/), so you can probably use any of the [re2](https://code.google.com/p/re2/wiki/Syntax) syntax. For example, you can use `$1`-style placeholders to refer to capture groups, as long as you single-quote the replacement string so that your shell doesn't interpolate `$1` as something else. 
 
 ## Why not codemod?
 
-Codemod asks me for confirmation for every change, which I find tiring. Usually once I see the first change I either want to quit or apply the rest of the changes.
+Codemod asks me for confirmation for every change, which I find tiring. Usually once I see the first change I either want to quit or apply the rest of the changes. I can always individually review changes using `git add --patch`, so for my workflow, confirmation of each change is unnecessary.
 
 ## Why not use the power/elegance/flexibility/chainsaw of unix?
 
