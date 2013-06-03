@@ -88,16 +88,15 @@ func main() {
 		prettyPrint(p, os.Stdout)
 		if !canProceed {
 			fmt.Printf("Continue? ([a]ll/[y]es/[n]o (default no): ")
-			var input rune
-			_, err := fmt.Scanf("%c\n", &input)
+			var input string
+			_, err := fmt.Scanf("%s", &input)
 			if err != nil {
-				fmt.Printf("%v", err)
 				return
 			}
 			switch input {
-			case 'a':
+			case "a":
 				canProceed = true
-			case 'y':
+			case "y":
 			default:
 				return
 			}
