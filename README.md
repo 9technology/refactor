@@ -15,7 +15,9 @@ Apply `s/regexp/replacement/g` across all files in the current directory tree wi
 
 ## Why not codemod?
 
-Codemod asks me for confirmation for every change, which I find tiring. Usually once I see the first change I either want to quit or apply the rest of the changes. I can always individually review changes using `git add --patch`, so for my workflow, confirmation of each change is unnecessary.
+- codemod doesn't let you auto-accept the remaining changes. Usually once I see the first few changes I either want to quit or apply the rest of the changes. I can always individually review changes using `git add --patch`, so for my workflow, confirmation of each change is usually unnecessary.
+- `refactor` prints all the patches to `stdout` for review, which gives you a nice summary at the end.
+- codemod is like 1000 lines of code, man! I don't even
 
 ## Why not use the power/elegance/flexibility/chainsaw of unix?
 
