@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/pranavraja/refactor/src/refactor"
+	"github.com/pranavraja/refactor/patch"
 	"github.com/vrischmann/termcolor"
 	"io"
 	"io/ioutil"
@@ -37,7 +37,7 @@ func walk(root string, suffix string, filePaths chan<- string) {
 	}
 }
 
-func patchAll(filenames <-chan string, find *regexp.Regexp, replace string, patches chan<- refactor.Patch, proceed <-chan bool) {
+func patchAll(filenames <-chan string, find *regexp.Regexp, replace string, patches chan<- patch.Patch, proceed <-chan bool) {
 	defer close(patches)
 	for filename := range filenames {
 		f, err := os.Open(filename)
@@ -49,10 +49,10 @@ func patchAll(filenames <-chan string, find *regexp.Regexp, replace string, patc
 		if err != nil {
 			continue
 		}
-		filePatches := make(chan refactor.Patch)
+		filePatches := make(chan patch.Patch)
 		patcherCanProceed := make(chan bool)
 		fileResult := make(chan string)
-		go refactor.Patcher(string(contents), find, replace, filePatches, patcherCanProceed, fileResult)
+		go patch.Patcher(string(contents), find, replace, filePatches, patcherCanProceed, fileResult)
 		for patch := range filePatches {
 			patch.Filename = filename
 			patches <- patch
@@ -65,7 +65,7 @@ func patchAll(filenames <-chan string, find *regexp.Regexp, replace string, patc
 	}
 }
 
-func prettyPrint(patch refactor.Patch, out io.Writer) {
+func prettyPrint(patch patch.Patch, out io.Writer) {
 	fmt.Fprintf(out, "%s\n %s\n %s\n", termcolor.Colored(patch.Filename, termcolor.Cyan), termcolor.Colored("-"+patch.Before, termcolor.Red), termcolor.Colored("+"+patch.After, termcolor.Green))
 }
 
@@ -77,7 +77,7 @@ func main() {
 	suffix := os.Args[1]
 	find := regexp.MustCompile(os.Args[2])
 	replace := os.Args[3]
-	patches := make(chan refactor.Patch)
+	patches := make(chan patch.Patch)
 	proceed := make(chan bool)
 
 	paths := make(chan string)
