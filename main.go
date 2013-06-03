@@ -87,20 +87,21 @@ func main() {
 	for p := range patches {
 		prettyPrint(p, os.Stdout)
 		if !canProceed {
-			fmt.Printf("Continue? (y/n[default]): ")
+			fmt.Printf("Continue? ([a]ll/[y]es/[n]o (default no): ")
 			var input rune
-			_, err := fmt.Scanf("%c", &input)
-			if input == 'y' {
-				canProceed = true
-			}
+			_, err := fmt.Scanf("%c\n", &input)
 			if err != nil {
 				fmt.Printf("%v", err)
 				return
 			}
-			if !canProceed {
+			switch input {
+			case 'a':
+				canProceed = true
+			case 'y':
+			default:
 				return
 			}
 		}
-		proceed <- true
+		proceed <- canProceed
 	}
 }
