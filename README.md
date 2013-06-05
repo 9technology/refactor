@@ -28,6 +28,7 @@ This one allows me to 'apply all' or 'skip all' on a per-file basis, not across 
 ## Running the tests
 
 `go test ./patch`
+`go test ./confirm`
 
 ## TODO
 

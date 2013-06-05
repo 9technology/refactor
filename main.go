@@ -1,6 +1,7 @@
 package main
 
 import (
+	"./confirm"
 	"fmt"
 	"github.com/pranavraja/refactor/patch"
 	"github.com/vrischmann/termcolor"
@@ -83,10 +84,12 @@ func main() {
 	paths := make(chan string)
 	go walk(".", suffix, paths)
 	go patchAll(paths, find, replace, patches, proceed)
-	var canProceed bool
+	var confirmation confirm.Confirmation
 	for p := range patches {
 		prettyPrint(p, os.Stdout)
-		if !canProceed {
+		if confirmation.Next() {
+			proceed <- true
+		} else {
 			fmt.Printf("Continue? ([a]ll/[y]es/[n]o (default no): ")
 			var input string
 			_, err := fmt.Scanf("%s", &input)
@@ -95,12 +98,13 @@ func main() {
 			}
 			switch input {
 			case "a":
-				canProceed = true
+				confirmation.ConfirmAll()
 			case "y":
+				confirmation.ConfirmOnce()
 			default:
 				return
 			}
+			proceed <- confirmation.Next()
 		}
-		proceed <- canProceed
 	}
 }
