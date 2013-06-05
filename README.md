@@ -32,5 +32,6 @@ This one allows me to 'apply all' or 'skip all' on a per-file basis, not across 
 
 ## TODO
 
+- Currently aborting will not write the patches that were made so far to that file.
 - Prettier display of patch hunks
 
