@@ -9,15 +9,9 @@ Assuming that `$GOPATH/bin` is in your `$PATH`:
 
 `refactor .ext 'regexp' 'replacement'`
 
-Apply `s/regexp/replacement/g` across all files in the current directory tree with extension `.ext`. Skip hidden files. Ask for confirmation on the first change, and if the user accepts, apply the rest of the changes without confirmation. Otherwise abort. Output each change applied as a color-coded patch.
+Apply `s/regexp/replacement/g` across all files in the current directory tree with extension `.ext`. Skip hidden files. Output each change applied as a color-coded patch, and allow the user to confirm all, confirm one, or abort.
 
 `regexp` is parsed by the [Go regexp package](http://golang.org/pkg/regexp/), so you can probably use any of the [re2](https://code.google.com/p/re2/wiki/Syntax) syntax. For example, you can use `$1`-style placeholders to refer to capture groups, as long as you single-quote the replacement string so that your shell doesn't interpolate `$1` as something else. 
-
-## Why not codemod?
-
-- codemod doesn't let you auto-accept the remaining changes. Usually once I see the first few changes I either want to quit or apply the rest of the changes. I can always individually review changes using `git add --patch`, so for my workflow, confirmation of each change is usually unnecessary.
-- `refactor` prints all the patches to `stdout` for review, which gives you a nice summary at the end.
-- codemod is like 1000 lines of code, man! I don't even
 
 ## Why not use the power/elegance/flexibility/chainsaw of unix?
 
