@@ -1,8 +1,8 @@
 package main
 
 import (
-	"./confirm"
 	"fmt"
+	"github.com/pranavraja/refactor/confirm"
 	"github.com/pranavraja/refactor/patch"
 	"github.com/vrischmann/termcolor"
 	"io"
