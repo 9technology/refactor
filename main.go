@@ -38,36 +38,31 @@ func walk(root string, suffix string, filePaths chan<- string) {
 	}
 }
 
-func patchAll(filenames <-chan string, find *regexp.Regexp, replace string, patches chan<- patch.Patch, proceed <-chan bool) {
-	defer close(patches)
-	for filename := range filenames {
-		f, err := os.Open(filename)
-		if err != nil {
-			continue
-		}
-		contents, err := ioutil.ReadAll(f)
-		f.Close()
-		if err != nil {
-			continue
-		}
-		filePatches := make(chan patch.Patch)
-		patcherCanProceed := make(chan bool)
-		fileResult := make(chan string)
-		go patch.Patcher(string(contents), find, replace, filePatches, patcherCanProceed, fileResult)
-		for patch := range filePatches {
-			patch.Filename = filename
-			patches <- patch
-			patcherCanProceed <- <-proceed
-		}
-		r, changed := <-fileResult
-		if changed {
-			ioutil.WriteFile(filename, []byte(r), 0) // Assume file already exists
-		}
-	}
+func prettyPrint(filename string, patch *patch.Patch, out io.Writer) {
+	fmt.Fprintf(out, "%s\n %s\n %s\n", termcolor.Colored(filename, termcolor.Cyan), termcolor.Colored("-"+patch.Before(), termcolor.Red), termcolor.Colored("+"+patch.After(), termcolor.Green))
 }
 
-func prettyPrint(patch patch.Patch, out io.Writer) {
-	fmt.Fprintf(out, "%s\n %s\n %s\n", termcolor.Colored(patch.Filename, termcolor.Cyan), termcolor.Colored("-"+patch.Before, termcolor.Red), termcolor.Colored("+"+patch.After, termcolor.Green))
+func confirmPatch(filename string, p *patch.Patch, confirmation confirm.Confirmation) bool {
+	prettyPrint(filename, p, os.Stdout)
+	if confirmation.Next() {
+		return true
+	} else {
+		fmt.Printf("Continue? ([a]ll/[y]es/[n]o (default no): ")
+		var input string
+		_, err := fmt.Scanf("%s", &input)
+		if err != nil {
+			return false
+		}
+		switch input {
+		case "a":
+			confirmation.ConfirmAll()
+		case "y":
+			confirmation.ConfirmOnce()
+		default:
+			return false
+		}
+		return confirmation.Next()
+	}
 }
 
 func main() {
@@ -77,34 +72,26 @@ func main() {
 	}
 	suffix := os.Args[1]
 	find := regexp.MustCompile(os.Args[2])
-	replace := os.Args[3]
-	patches := make(chan patch.Patch)
-	proceed := make(chan bool)
+	replace := []byte(os.Args[3])
 
 	paths := make(chan string)
 	go walk(".", suffix, paths)
-	go patchAll(paths, find, replace, patches, proceed)
 	var confirmation confirm.Confirmation
-	for p := range patches {
-		prettyPrint(p, os.Stdout)
-		if confirmation.Next() {
-			proceed <- true
-		} else {
-			fmt.Printf("Continue? ([a]ll/[y]es/[n]o (default no): ")
-			var input string
-			_, err := fmt.Scanf("%s", &input)
-			if err != nil {
+	for file := range paths {
+		patcher := patch.NewPatcher(file, find, replace)
+		err := patcher.Load()
+		if err != nil {
+			println(err)
+			return
+		}
+		for p := patcher.Next(); p != nil; p = patcher.Next() {
+			canProceed := confirmPatch(file, p, confirmation)
+			if canProceed {
+				patcher.Accept(p)
+			} else {
+				patcher.Done()
 				return
 			}
-			switch input {
-			case "a":
-				confirmation.ConfirmAll()
-			case "y":
-				confirmation.ConfirmOnce()
-			default:
-				return
-			}
-			proceed <- confirmation.Next()
 		}
 	}
 }

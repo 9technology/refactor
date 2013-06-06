@@ -1,75 +1,99 @@
 package patch
 
 import (
-	"fmt"
-	"strings"
+	"bytes"
+	"io/ioutil"
+	"os"
 )
 
-func outerLinesForSubstring(str string, start int, end int) (startOfFirstLine int, endOfLastLine int) {
-	startOfFirstLine = strings.LastIndex(str[0:start], "\n")
+func concat(first []byte, rest ...[]byte) []byte {
+	for _, b := range rest {
+		first = append(first, b...)
+	}
+	return first
+}
+
+func linesSurrounding(b []byte, start int, end int) string {
+	startOfFirstLine := bytes.LastIndexAny(b[0:start], "\r\n")
 	if startOfFirstLine == -1 {
 		startOfFirstLine = 0
 	} else {
 		startOfFirstLine += 1 // Go past that newline
 	}
-	endOfLastLine = strings.Index(str[end:], "\n")
+	endOfLastLine := bytes.IndexAny(b[end:], "\r\n")
 	if endOfLastLine == -1 {
-		endOfLastLine = len(str)
+		endOfLastLine = len(b)
 	} else {
 		endOfLastLine += end // Add the rest of the string's length
 	}
-	return
+	return string(b[startOfFirstLine:endOfLastLine])
+}
+
+// A Patch is an intent to replace patched[start:end] with replacement
+type Patch struct {
+	patched     []byte
+	start       int
+	end         int
+	replacement []byte
+}
+
+func (p *Patch) Before() string {
+	return linesSurrounding(p.patched, p.start, p.end)
+}
+
+func (p *Patch) After() string {
+	after := concat(p.patched[0:p.start], p.replacement, p.patched[p.end:])
+	return linesSurrounding(after, p.start, p.start+len(p.replacement))
 }
 
 type replacer interface {
-	ReplaceAllString(src, repl string) string
+	FindIndex([]byte) []int
+	ReplaceAll([]byte, []byte) []byte
 }
 
-// Returns a before/after view of the surrounding lines when find/replace is done
-func patchForSubstring(str string, start int, end int, find replacer, replace string) (newStr string, before string, after string) {
-	replaced := find.ReplaceAllString(str[start:end], replace)
-	originalStart, originalEnd := outerLinesForSubstring(str, start, end)
-	before = str[originalStart:originalEnd]
-	newStr = str[0:start] + replaced + str[end:]
-	newStart, newEnd := outerLinesForSubstring(newStr, start, start+len(replaced))
-	after = newStr[newStart:newEnd]
-	return
+type Patcher struct {
+	filename string
+	progress int
+	contents []byte
+	find     replacer
+	replace  []byte
 }
 
-type Patch struct {
-	Filename string
-	Before   string
-	After    string
+func NewPatcher(filename string, find replacer, replace []byte) *Patcher {
+	return &Patcher{filename: filename, find: find, replace: replace}
 }
 
-func (p Patch) String() string {
-	return fmt.Sprintf("%s:\n\t%s => %s\n", p.Filename, p.Before, p.After)
+func (p *Patcher) Load() error {
+	f, err := os.Open(p.filename)
+	if err != nil {
+		return err
+	}
+	p.contents, err = ioutil.ReadAll(f)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-type finder interface {
-	replacer
-	FindStringIndex(str string) []int
-}
-
-func Patcher(str string, find finder, replace string, patches chan<- Patch, proceed <-chan bool, result chan<- string) {
-	defer close(result)
-	var before, after string
-	var progress int
-	match := find.FindStringIndex(str[progress:])
+func (p *Patcher) Next() *Patch {
+	match := p.find.FindIndex(p.contents[p.progress:])
 	if match == nil {
-		close(patches)
-		return
+		return nil
 	}
-	for match != nil {
-		str, before, after = patchForSubstring(str, progress+match[0], progress+match[1], find, replace)
-		progress = match[1] - len(before) + len(after)
-		patches <- Patch{Before: before, After: after}
-		canProceed := <-proceed
-		if !canProceed {
-			break
-		}
-		match = find.FindStringIndex(str[progress:])
+	start := p.progress + match[0]
+	end := p.progress + match[1]
+	replacement := p.find.ReplaceAll(p.contents[start:end], p.replace)
+	return &Patch{p.contents, start, end, replacement}
+}
+
+func (p *Patcher) Accept(patch *Patch) {
+	p.contents = concat(p.contents[0:patch.start], patch.replacement, p.contents[patch.end:])
+	p.progress = patch.start + len(patch.replacement)
+}
+
+func (p *Patcher) Done() error {
+	if p.progress == 0 {
+		return nil
 	}
-	close(patches)
-	result <- str
+	return ioutil.WriteFile(p.filename, p.contents, 0)
 }
