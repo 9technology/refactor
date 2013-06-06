@@ -42,7 +42,7 @@ func prettyPrint(filename string, patch *patch.Patch, out io.Writer) {
 	fmt.Fprintf(out, "%s\n %s\n %s\n", termcolor.Colored(filename, termcolor.Cyan), termcolor.Colored("-"+patch.Before(), termcolor.Red), termcolor.Colored("+"+patch.After(), termcolor.Green))
 }
 
-func confirmPatch(filename string, p *patch.Patch, confirmation confirm.Confirmation) bool {
+func confirmPatch(filename string, p *patch.Patch, confirmation *confirm.Confirmation) bool {
 	prettyPrint(filename, p, os.Stdout)
 	if confirmation.Next() {
 		return true
@@ -76,7 +76,7 @@ func main() {
 
 	paths := make(chan string)
 	go walk(".", suffix, paths)
-	var confirmation confirm.Confirmation
+	confirmation := new(confirm.Confirmation)
 	for file := range paths {
 		patcher := patch.NewPatcher(file, find, replace)
 		err := patcher.Load()
