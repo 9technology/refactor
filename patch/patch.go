@@ -42,7 +42,7 @@ func (p *Patch) Before() string {
 }
 
 func (p *Patch) After() string {
-	after := concat(p.patched[0:p.start], p.replacement, p.patched[p.end:])
+	after := concat(nil, p.patched[0:p.start], p.replacement, p.patched[p.end:])
 	return linesSurrounding(after, p.start, p.start+len(p.replacement))
 }
 
@@ -87,7 +87,7 @@ func (p *Patcher) Next() *Patch {
 }
 
 func (p *Patcher) Accept(patch *Patch) {
-	p.contents = concat(p.contents[0:patch.start], patch.replacement, p.contents[patch.end:])
+	p.contents = concat(nil, p.contents[0:patch.start], patch.replacement, p.contents[patch.end:])
 	p.progress = patch.start + len(patch.replacement)
 }
 
