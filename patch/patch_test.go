@@ -145,3 +145,10 @@ func TestPatcher_Accept(t *testing.T) {
 		t.Errorf("incorrect progress through file: %d", patcher.progress)
 	}
 }
+
+func TestPatcher_Done_NoChanges(t *testing.T) {
+	patcher := Patcher{}
+	if err := patcher.Done(); err != nil {
+		t.Errorf("error on Done(): %v", err)
+	}
+}
