@@ -93,5 +93,6 @@ func main() {
 				return
 			}
 		}
+		patcher.Done()
 	}
 }
