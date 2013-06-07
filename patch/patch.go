@@ -29,20 +29,20 @@ func linesSurrounding(b []byte, start int, end int) string {
 	return string(b[startOfFirstLine:endOfLastLine])
 }
 
-// A Patch is an intent to replace patched[start:end] with replacement
+// A Patch is an intent to replace original[start:end] with replacement
 type Patch struct {
-	patched     []byte
+	original    []byte
 	start       int
 	end         int
 	replacement []byte
 }
 
 func (p *Patch) Before() string {
-	return linesSurrounding(p.patched, p.start, p.end)
+	return linesSurrounding(p.original, p.start, p.end)
 }
 
 func (p *Patch) After() string {
-	after := concat(nil, p.patched[0:p.start], p.replacement, p.patched[p.end:])
+	after := concat(nil, p.original[0:p.start], p.replacement, p.original[p.end:])
 	return linesSurrounding(after, p.start, p.start+len(p.replacement))
 }
 

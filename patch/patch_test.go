@@ -11,25 +11,25 @@ var multilinePatch []byte = []byte("split\nacross\ndifferent\nlines")
 func TestPatch_Before(t *testing.T) {
 	var patch Patch
 	patch = Patch{
-		patched: singleLinePatch,
-		start:   4,
-		end:     5,
+		original: singleLinePatch,
+		start:    4,
+		end:      5,
 	}
 	if before := patch.Before(); before != "single line" {
 		t.Errorf("patch.Before() should be 'single line', but was '%s'", before)
 	}
 	patch = Patch{
-		patched: multilinePatch,
-		start:   8,
-		end:     12,
+		original: multilinePatch,
+		start:    8,
+		end:      12,
 	}
 	if before := patch.Before(); before != "across" {
 		t.Errorf("patch.Before() should be 'across', but was '%s'", before)
 	}
 	patch = Patch{
-		patched: multilinePatch,
-		start:   8,
-		end:     16,
+		original: multilinePatch,
+		start:    8,
+		end:      16,
 	}
 	if before := patch.Before(); before != "across\ndifferent" {
 		t.Errorf("patch.Before() should be 'across\ndifferent', but was '%s'", before)
@@ -39,7 +39,7 @@ func TestPatch_Before(t *testing.T) {
 func TestPatch_After(t *testing.T) {
 	var patch Patch
 	patch = Patch{
-		patched:     singleLinePatch,
+		original:    singleLinePatch,
 		start:       4,
 		end:         5,
 		replacement: []byte("replacement"),
@@ -48,7 +48,7 @@ func TestPatch_After(t *testing.T) {
 		t.Errorf("patch.After() should be 'singreplacemente line', but was '%s'", after)
 	}
 	patch = Patch{
-		patched:     multilinePatch,
+		original:    multilinePatch,
 		start:       8,
 		end:         12,
 		replacement: []byte("replacement"),
@@ -57,7 +57,7 @@ func TestPatch_After(t *testing.T) {
 		t.Errorf("patch.After() should be 'acreplacement', but was '%s'", after)
 	}
 	patch = Patch{
-		patched:     multilinePatch,
+		original:    multilinePatch,
 		start:       8,
 		end:         16,
 		replacement: []byte("replacement"),
@@ -66,7 +66,7 @@ func TestPatch_After(t *testing.T) {
 		t.Errorf("patch.After() should be 'acreplacementferent', but was '%s'", after)
 	}
 	patch = Patch{
-		patched:     multilinePatch,
+		original:    multilinePatch,
 		start:       8,
 		end:         16,
 		replacement: []byte("multiline\nreplace"),
@@ -83,7 +83,7 @@ func TestPatcher_Next(t *testing.T) {
 		contents: []byte("gabcdefgabcdef"),
 	}
 	patch := patcher.Next()
-	if string(patch.patched) != "gabcdefgabcdef" {
+	if string(patch.original) != "gabcdefgabcdef" {
 		t.Errorf("string was not passed to *Patch")
 	}
 	if patch.start != 1 {
@@ -114,7 +114,7 @@ func TestPatcher_Next_CaptureGroups(t *testing.T) {
 		contents: []byte("gabcdefgabcdef"),
 	}
 	patch := patcher.Next()
-	if string(patch.patched) != "gabcdefgabcdef" {
+	if string(patch.original) != "gabcdefgabcdef" {
 		t.Errorf("string was not passed to *Patch")
 	}
 	if patch.start != 1 {
