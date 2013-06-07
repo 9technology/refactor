@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/pranavraja/refactor/confirm"
-	"github.com/pranavraja/refactor/patch"
+	"github.com/ninemsn/refactor/confirm"
+	"github.com/ninemsn/refactor/patch"
 	"github.com/vrischmann/termcolor"
 	"io"
 	"io/ioutil"
