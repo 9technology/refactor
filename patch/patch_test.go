@@ -5,8 +5,8 @@ import (
 	"testing"
 )
 
-var singleLinePatch []byte = []byte("single line")
-var multilinePatch []byte = []byte("split\nacross\ndifferent\nlines")
+var singleLinePatch = []byte("single line")
+var multilinePatch = []byte("split\nacross\ndifferent\nlines")
 
 func TestPatch_Before(t *testing.T) {
 	var patch Patch
