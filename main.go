@@ -3,9 +3,9 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/ninemsn/refactor/confirm"
-	"github.com/ninemsn/refactor/patch"
-	"github.com/vrischmann/termcolor"
+	"github.com/mi9/refactor/confirm"
+	"github.com/mi9/refactor/patch"
+	"github.com/mi9/refactor/termcolor"
 	"io"
 	"os"
 	"path/filepath"

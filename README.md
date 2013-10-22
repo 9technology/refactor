@@ -1,7 +1,7 @@
 
 A tool to automate regex-based refactorings across your codebase. Similar to [codemod](https://github.com/facebook/codemod), but slightly more optimistic.
 
-`go get github.com/ninemsn/refactor`
+`go get github.com/mi9/refactor`
 
 ## Usage
 
