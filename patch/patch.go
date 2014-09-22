@@ -68,6 +68,7 @@ func (p *Patcher) Load() error {
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 	p.contents, err = ioutil.ReadAll(f)
 	if err != nil {
 		return err
